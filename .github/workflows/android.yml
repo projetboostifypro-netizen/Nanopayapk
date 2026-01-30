@@ -1,0 +1,45 @@
+name: Build Nanopay APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 17
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install Cordova
+      run: npm install -g cordova cordova-res
+
+    - name: Add Android platform
+      run: |
+        cordova platform add android
+        cordova plugin add cordova-plugin-splashscreen
+
+    - name: Add icons & splash
+      run: |
+        cordova-res android --skip-config --copy
+
+    - name: Build Debug APK
+      run: cordova build android
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: nanopay-apk
+        path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
